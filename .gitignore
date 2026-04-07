@@ -1,0 +1,44 @@
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build output ───────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+
+# ── Environment variables — NEVER commit these ─────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.staging
+
+# ── Editor / OS ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Type-check cache ───────────────────────────────────────────
+*.tsbuildinfo
+
+# ── Testing ────────────────────────────────────────────────────
+coverage/
+.nyc_output/
