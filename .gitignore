@@ -39,6 +39,12 @@ pnpm-debug.log*
 # ── Type-check cache ───────────────────────────────────────────
 *.tsbuildinfo
 
+# ── Import scripts (contain API keys) ─────────────────────────
+scripts/
+
+# ── Python venv ───────────────────────────────────────────────
+.venv/
+
 # ── Testing ────────────────────────────────────────────────────
 coverage/
 .nyc_output/

@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { Link } from 'react-router';
-import { useStore } from '../store/StoreContext';
-import { formatINR, type EnrichedRing } from '../data/ringData';
+import { useStore, type StoreRing } from '../store/StoreContext';
+import { formatINR } from '../data/useProducts';
 
 interface Props {
-  ring: EnrichedRing;
+  ring: StoreRing;
   index?: number;
 }
 
@@ -39,7 +39,7 @@ export function RingCard({ ring, index = 0 }: Props) {
         <div className="relative aspect-square overflow-hidden bg-gray-50">
           <img
             src={ring.image_url}
-            alt={`${ring.style} ${ring.metal} ring`}
+            alt={('name' in ring && ring.name) || `${ring.style} ${ring.metal} ring`}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
           />
@@ -89,7 +89,7 @@ export function RingCard({ ring, index = 0 }: Props) {
         <div className="pt-3 pb-1">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div>
-              <p className="font-serif text-sm leading-tight">{ring.style}</p>
+              <p className="font-serif text-sm leading-tight">{'name' in ring && ring.name ? ring.name : ring.style}</p>
               <p className="text-gray-500 text-xs">{ring.metal}{ring.stone !== 'None' ? ` · ${ring.stone}` : ''}</p>
             </div>
             <p className="font-semibold text-sm shrink-0">{formatINR(ring.price)}</p>

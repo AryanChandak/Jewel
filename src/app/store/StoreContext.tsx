@@ -3,13 +3,17 @@ import {
   useCallback, type ReactNode,
 } from 'react';
 import { customizedPrice, type EnrichedRing } from '../data/ringData';
+import type { Product } from '../data/useProducts';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+/** A ring item usable in the store — works with both old EnrichedRing and new Product */
+export type StoreRing = EnrichedRing | Product;
 
 export interface Customization { metal: string; stone: string }
 
 export interface CartItem {
-  ring: EnrichedRing;
+  ring: StoreRing;
   quantity: number;
   customization?: Customization;
   /** computed at add-time so it's stable in the cart */
@@ -19,22 +23,22 @@ export interface CartItem {
 interface State {
   cart: CartItem[];
   wishlist: number[];
-  recentlyViewed: EnrichedRing[];
+  recentlyViewed: StoreRing[];
   cartOpen: boolean;
 }
 
 type Action =
-  | { type: 'ADD_TO_CART'; ring: EnrichedRing; customization?: Customization }
+  | { type: 'ADD_TO_CART'; ring: StoreRing; customization?: Customization }
   | { type: 'REMOVE_FROM_CART'; key: string }
   | { type: 'UPDATE_QTY'; key: string; qty: number }
   | { type: 'TOGGLE_WISHLIST'; id: number }
-  | { type: 'ADD_RECENTLY_VIEWED'; ring: EnrichedRing }
+  | { type: 'ADD_RECENTLY_VIEWED'; ring: StoreRing }
   | { type: 'SET_CART_OPEN'; open: boolean }
   | { type: 'HYDRATE'; cart: CartItem[]; wishlist: number[] };
 
 // ─── Key helper ───────────────────────────────────────────────────────────────
 
-export function cartItemKey(ring: EnrichedRing, customization?: Customization): string {
+export function cartItemKey(ring: StoreRing, customization?: Customization): string {
   return customization
     ? `${ring.id}-${customization.metal}-${customization.stone}`
     : String(ring.id);
@@ -111,17 +115,17 @@ function reducer(state: State, action: Action): State {
 interface StoreCtx {
   cart: CartItem[];
   wishlist: number[];
-  recentlyViewed: EnrichedRing[];
+  recentlyViewed: StoreRing[];
   cartOpen: boolean;
   cartCount: number;
   cartTotal: number;
   wishlistCount: number;
-  addToCart: (ring: EnrichedRing, customization?: Customization) => void;
+  addToCart: (ring: StoreRing, customization?: Customization) => void;
   removeFromCart: (key: string) => void;
   updateQty: (key: string, qty: number) => void;
   toggleWishlist: (id: number) => void;
   isInWishlist: (id: number) => boolean;
-  addToRecentlyViewed: (ring: EnrichedRing) => void;
+  addToRecentlyViewed: (ring: StoreRing) => void;
   setCartOpen: (open: boolean) => void;
 }
 
@@ -154,7 +158,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const cartCount = state.cart.reduce((s, i) => s + i.quantity, 0);
   const cartTotal = state.cart.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
 
-  const addToCart = useCallback((ring: EnrichedRing, customization?: Customization) => {
+  const addToCart = useCallback((ring: StoreRing, customization?: Customization) => {
     dispatch({ type: 'ADD_TO_CART', ring, customization });
   }, []);
 
@@ -170,7 +174,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'TOGGLE_WISHLIST', id });
   }, []);
 
-  const addToRecentlyViewed = useCallback((ring: EnrichedRing) => {
+  const addToRecentlyViewed = useCallback((ring: StoreRing) => {
     dispatch({ type: 'ADD_RECENTLY_VIEWED', ring });
   }, []);
 

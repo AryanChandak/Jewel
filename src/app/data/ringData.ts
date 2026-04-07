@@ -106,6 +106,9 @@ export const RING_CATALOG: CatalogRing[] = [
   { id: 58, category: 'Luxury',     style: 'Halo',        metal: 'Gold',      stone: 'Diamond',  budget_range: '150k+',    gender: 'Female', personality: 'Elegant',  occasion: 'Wedding',    design: 'Double Sparkle',    image_url: img('Halo',        'Diamond')  },
   { id: 59, category: 'Statement',  style: 'Signet',      metal: 'Silver',    stone: 'None',     budget_range: '5k-10k',   gender: 'Male',   personality: 'Bold',     occasion: 'Formal',     design: 'Flat Top',          image_url: img('Signet',      'None')     },
   { id: 60, category: 'Casual',     style: 'Stackable',   metal: 'Gold',      stone: 'None',     budget_range: '10k-20k',  gender: 'Female', personality: 'Minimal',  occasion: 'Daily Wear', design: 'Thin Stack',        image_url: img('Stackable',   'None')     },
+
+  // ─── Real scraped products ────────────────────────────────────────────────
+  { id: 61, category: 'Engagement', style: 'Band',        metal: 'Gold',      stone: 'Diamond',  budget_range: '50k-150k', gender: 'Male',   personality: 'Classic',  occasion: 'Engagement', design: 'Accented Lumen',    image_url: '/rings/accented-lumen-men-ring/image_01_diagonal.jpg' },
 ];
 
 // ─── Enriched catalog (adds price, description, rating, reviews, tags) ────────
@@ -171,11 +174,22 @@ function ringDescription(r: CatalogRing): string {
   return `A ${adj} ${r.style.toLowerCase()} ring crafted in ${metal}${stone}. ${r.design} silhouette — ideal for ${r.occasion.toLowerCase()}.`;
 }
 
+// ─── Real product overrides (scraped data) ────────────────────────────────────
+const REAL_PRODUCT_DATA: Record<number, Partial<EnrichedRing>> = {
+  61: {
+    description: 'Diamond flush-set into the grooved surface to provide an accented burst of light.',
+    price: 88000,
+    rating: 4.6,
+    reviews: 84,
+    tags: ['engagement', 'wedding', 'daily wear', 'gifting', 'self-gift'],
+  },
+};
+
 export const ENRICHED_CATALOG: EnrichedRing[] = RING_CATALOG.map((ring) => {
   const base = PRICE_MIDPOINTS[ring.budget_range] ?? 15000;
   const price = Math.round(base * (1 + ((ring.id * 3) % 5) * 0.07));
   const ratingRaw = 3.7 + ((ring.id * 11) % 13) / 10;
-  return {
+  const enriched: EnrichedRing = {
     ...ring,
     price,
     description: ringDescription(ring),
@@ -183,6 +197,10 @@ export const ENRICHED_CATALOG: EnrichedRing[] = RING_CATALOG.map((ring) => {
     reviews: 12 + (ring.id * 19) % 170,
     tags: CATEGORY_TAGS[ring.category] ?? [],
   };
+  // Apply real product overrides if available
+  const overrides = REAL_PRODUCT_DATA[ring.id];
+  if (overrides) Object.assign(enriched, overrides);
+  return enriched;
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -202,8 +220,19 @@ const GALLERY_IMGS: Record<string, string[]> = {
   Knuckle:       [STYLE_IMG.Knuckle,      STYLE_IMG.Stackable,    STYLE_IMG.Band],
 };
 
+// ─── Per-ring gallery overrides (real product images) ─────────────────────────
+const RING_GALLERY: Record<number, string[]> = {
+  61: [
+    '/rings/accented-lumen-men-ring/image_01_diagonal.jpg',
+    '/rings/accented-lumen-men-ring/image_02_top.jpg',
+    '/rings/accented-lumen-men-ring/image_03_side.jpg',
+    '/rings/accented-lumen-men-ring/image_04_side.jpg',
+    '/rings/accented-lumen-men-ring/image_05_shank.jpg',
+  ],
+};
+
 export function getProductGallery(ring: CatalogRing): string[] {
-  return GALLERY_IMGS[ring.style] ?? [ring.image_url, ring.image_url, ring.image_url];
+  return RING_GALLERY[ring.id] ?? GALLERY_IMGS[ring.style] ?? [ring.image_url, ring.image_url, ring.image_url];
 }
 
 

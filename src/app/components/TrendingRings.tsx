@@ -1,17 +1,23 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { motion, useInView } from 'motion/react';
 import { TrendingUp } from 'lucide-react';
-import { ENRICHED_CATALOG } from '../data/ringData';
+import { useProducts } from '../data/useProducts';
 import { RingCard } from './RingCard';
-
-// Pick trending rings: high reviews, diverse categories
-const TRENDING = ENRICHED_CATALOG.filter((r) => r.reviews > 80)
-  .sort((a, b) => b.reviews - a.reviews)
-  .slice(0, 4);
 
 export function TrendingRings() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.15 });
+  const { products, loading } = useProducts();
+
+  const trending = useMemo(
+    () => products
+      .filter(r => r.reviews > 80)
+      .sort((a, b) => b.reviews - a.reviews)
+      .slice(0, 4),
+    [products],
+  );
+
+  if (loading || trending.length === 0) return null;
 
   return (
     <section id="trending" className="py-20 px-6 bg-white">
@@ -39,7 +45,7 @@ export function TrendingRings() {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {TRENDING.map((ring, i) => (
+          {trending.map((ring, i) => (
             <RingCard key={ring.id} ring={ring} index={i} />
           ))}
         </div>

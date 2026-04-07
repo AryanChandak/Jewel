@@ -2,15 +2,14 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'react-router';
-import { ENRICHED_CATALOG, formatINR, type EnrichedRing } from '../data/ringData';
+import { useProducts, formatINR, type Product } from '../data/useProducts';
 import { RingCard } from '../components/RingCard';
 import { useStore } from '../store/StoreContext';
 
 // ─── Filter constants ─────────────────────────────────────────────────────────
 const METALS     = ['Gold', 'Rose Gold', 'White Gold', 'Platinum', 'Silver', 'Titanium', 'Steel'];
 const CATEGORIES = ['Engagement', 'Wedding', 'Casual', 'Luxury', 'Statement'];
-const STYLES     = [...new Set(ENRICHED_CATALOG.map(r => r.style))].sort();
-const GENDERS    = ['Female', 'Male', 'Unisex'];
+const GENDERS    = ['Female', 'Male', 'Unisex', 'For Her', 'For Him'];
 const MAX_PRICE  = 300000;
 
 type SortKey = 'recommended' | 'price_asc' | 'price_desc' | 'rating' | 'reviews';
@@ -91,6 +90,9 @@ export default function CollectionsPage() {
   const [sort, setSort]     = useState<SortKey>('recommended');
   const [sidebarOpen, setSidebar] = useState(false);
   const { wishlist } = useStore();
+  const { products: allProducts, loading } = useProducts();
+
+  const STYLES = useMemo(() => [...new Set(allProducts.map(r => r.style))].sort(), [allProducts]);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -99,13 +101,13 @@ export default function CollectionsPage() {
   const set = <K extends keyof Filters>(key: K, val: Filters[K]) =>
     setFilters(f => ({ ...f, [key]: val }));
 
-  const filtered: EnrichedRing[] = useMemo(() => {
-    let list = [...ENRICHED_CATALOG];
+  const filtered: Product[] = useMemo(() => {
+    let list = [...allProducts];
 
     if (filters.wishlist)          list = list.filter(r => wishlist.includes(r.id));
-    if (filters.search)            list = list.filter(r => [r.style, r.metal, r.stone, r.category, r.personality].join(' ').toLowerCase().includes(filters.search.toLowerCase()));
-    if (filters.metals.length)     list = list.filter(r => filters.metals.includes(r.metal));
-    if (filters.categories.length) list = list.filter(r => filters.categories.includes(r.category));
+    if (filters.search)            list = list.filter(r => [r.name, r.style, r.metal, r.stone, r.category, r.personality].join(' ').toLowerCase().includes(filters.search.toLowerCase()));
+    if (filters.metals.length)     list = list.filter(r => filters.metals.some(m => r.metal.includes(m)));
+    if (filters.categories.length) list = list.filter(r => filters.categories.some(c => r.category.toLowerCase() === c.toLowerCase()));
     if (filters.styles.length)     list = list.filter(r => filters.styles.includes(r.style));
     if (filters.genders.length)    list = list.filter(r => filters.genders.includes(r.gender));
     list = list.filter(r => r.price <= filters.priceMax);
@@ -117,7 +119,7 @@ export default function CollectionsPage() {
       case 'reviews':    return list.sort((a, b) => b.reviews - a.reviews);
       default:           return list;
     }
-  }, [filters, sort, wishlist]);
+  }, [filters, sort, wishlist, allProducts]);
 
   const activePills = [
     ...filters.metals.map(m => ({ label: m, remove: () => set('metals', filters.metals.filter(x => x !== m)) })),
@@ -170,7 +172,7 @@ export default function CollectionsPage() {
       {/* Page header */}
       <div className="bg-gray-50 px-6 py-12 text-center">
         <h1 className="text-4xl md:text-5xl font-serif mb-2">Our Collections</h1>
-        <p className="text-gray-500 text-sm">Discover {ENRICHED_CATALOG.length} handcrafted rings</p>
+        <p className="text-gray-500 text-sm">Discover {allProducts.length} handcrafted rings</p>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-10 flex gap-10">
@@ -229,7 +231,11 @@ export default function CollectionsPage() {
           )}
 
           {/* Grid */}
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="py-24 flex justify-center">
+              <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="py-24 text-center text-gray-400">
               <p className="font-serif text-xl mb-2">No rings match your filters.</p>
               <button
